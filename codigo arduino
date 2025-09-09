@@ -1,1 +1,165 @@
+#include <Arduino.h>
+#include <ArduinoJson.h>
+#include <DHT.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 
+// --- Definições de hardware ---
+#define dhttype DHT22
+#define TRIG_PIN 13
+#define ECHO_PIN 12
+#define DHTPIN 5
+#define LED_VERDE 8
+#define LED_AMARELO 36
+#define LED_VERMELHO 34
+
+// --- Variáveis do sistema ---
+long duracao;
+float distancia_cm;
+
+int contadorPasses = 0;
+int estadoAnteriorPassagem = 0;
+int jogadorId = 1;
+
+DHT dht(DHTPIN, dhttype);
+
+// --- Config WiFi/MQTT ---
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+const char* mqttServer = "test.mosquitto.org";
+const int mqttPort = 1883;
+const char* mqttClientId = "esp32-futebol";
+
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
+
+// Callback para mensagens MQTT recebidas (ex: controle remoto dos LEDs)
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Mensagem recebida em [");
+  Serial.print(topic);
+  Serial.print("]: ");
+  for (unsigned int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+
+  if (payload[0] == '1') digitalWrite(LED_VERDE, HIGH);
+  if (payload[0] == '0') digitalWrite(LED_VERDE, LOW);
+}
+
+// Função de reconexão MQTT
+void reconnectMQTT() {
+  while (!mqttClient.connected()) {
+    Serial.print("Tentando conectar ao MQTT...");
+    if (mqttClient.connect(mqttClientId)) {
+      Serial.println("Conectado!");
+      mqttClient.subscribe("led/control/samuel"); // tópico de controle
+    } else {
+      Serial.print("Falha, rc=");
+      Serial.print(mqttClient.state());
+      Serial.println(" tentando novamente em 2s...");
+      delay(2000);
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_AMARELO, OUTPUT);
+  pinMode(LED_VERMELHO, OUTPUT);
+
+  digitalWrite(LED_VERDE, LOW);
+  digitalWrite(LED_AMARELO, LOW);
+  digitalWrite(LED_VERMELHO, LOW);
+
+  // Conexão WiFi
+  WiFi.begin(ssid, password);
+  Serial.print("Conectando-se ao WiFi ");
+  Serial.print(ssid);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi conectado!");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+
+  // Conexão MQTT
+  mqttClient.setServer(mqttServer, mqttPort);
+  mqttClient.setCallback(mqttCallback);
+  reconnectMQTT();
+}
+
+void loop() {
+  if (!mqttClient.connected()) {
+    reconnectMQTT();
+  }
+  mqttClient.loop();
+
+  // Sensor de distância
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  duracao = pulseIn(ECHO_PIN, HIGH);
+  distancia_cm = duracao * 0.0343 / 2;
+
+  // DHT
+  float temperatura = dht.readTemperature();
+  float umidade = dht.readHumidity();
+
+  // Detecta passagem
+  int estadoAtualPassagem = (distancia_cm < 20) ? 1 : 0;
+
+  if (estadoAtualPassagem == 1 && estadoAnteriorPassagem == 0) {
+    contadorPasses++;
+    if (contadorPasses % 5 == 0) {
+      jogadorId = (jogadorId == 1) ? 2 : 1;
+    }
+
+    if (contadorPasses >= 10) {
+      digitalWrite(LED_VERMELHO, HIGH);
+      digitalWrite(LED_AMARELO, LOW);
+      digitalWrite(LED_VERDE, LOW);
+    } else if (contadorPasses >= 5) {
+      digitalWrite(LED_VERMELHO, LOW);
+      digitalWrite(LED_AMARELO, HIGH);
+      digitalWrite(LED_VERDE, LOW);
+    } else {
+      digitalWrite(LED_VERMELHO, LOW);
+      digitalWrite(LED_AMARELO, LOW);
+      digitalWrite(LED_VERDE, HIGH);
+    }
+  }
+  estadoAnteriorPassagem = estadoAtualPassagem;
+
+// --- Publicação MQTT separada por métrica ---
+  mqttClient.publish("futebol/passagens", String(contadorPasses).c_str());
+  mqttClient.publish("futebol/jogador", String(jogadorId).c_str());
+  mqttClient.publish("futebol/distancia", String(distancia_cm).c_str());
+  mqttClient.publish("futebol/temperatura", String(isnan(temperatura) ? 0 : temperatura).c_str());
+  mqttClient.publish("futebol/umidade", String(isnan(umidade) ? 0 : umidade).c_str());
+
+  // --- Serial Monitor organizado ---
+  Serial.print("Passagens: ");
+  Serial.println(contadorPasses);
+  Serial.print("Jogador: ");
+  Serial.println(jogadorId);
+  Serial.print("Distancia (cm): ");
+  Serial.println(distancia_cm);
+  Serial.print("Temperatura (°C): ");
+  Serial.println(isnan(temperatura) ? 0 : temperatura);
+  Serial.print("Umidade (%): ");
+  Serial.println(isnan(umidade) ? 0 : umidade);
+  Serial.println("--------------------");
+
+  delay(500);
+}
