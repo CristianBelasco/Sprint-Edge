@@ -21,18 +21,18 @@ Resumo:
 
 # Arquitetura Proposta:
 A arquitetura pode ser vista como um sistema IoT simples:
-Camada de Sensores:
+. Camada de Sensores:
   - Sensor Ultrassônico (HC-SR04 ou similar): mede distância para detectar passagem da bola/jogador.
   - DHT22: mede temperatura e umidade do ambiente.
-Camada de Processamento (ESP32):
+. Camada de Processamento (ESP32):
   - Recebe dados dos sensores.
   - Processa o estado atual (passagem detectada, contagem de passes, troca de jogador).
   - Decide o acionamento dos LEDs.
   - Publica dados no broker MQTT.
-Camada de Comunicação (MQTT):
+. Camada de Comunicação (MQTT):
   - Broker recebe os dados.
   - Possibilidade de outros dispositivos ou dashboards (Node-RED, Home Assistant, App customizado) se inscreverem nos tópicos para visualização em tempo real.
-Camada de Atuação (Feedback Visual):
+. Camada de Atuação (Feedback Visual):
   - LEDs sinalizam status do jogo localmente.
   - Possibilidade de controle remoto do LED verde via MQTT (exemplo implementado no callback).
 
