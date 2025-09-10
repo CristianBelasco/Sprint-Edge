@@ -43,3 +43,8 @@ A arquitetura pode ser vista como um sistema IoT simples:
 - 3 Leds
 - Jumpers
 - Protoboard
+
+# Fotos Wokwi, Node-red e Dashboard
+<img width="522" height="449" alt="image" src="https://github.com/user-attachments/assets/31a78156-be25-4947-bd12-938038216c32" />
+
+
