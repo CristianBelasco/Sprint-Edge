@@ -44,7 +44,17 @@ A arquitetura pode ser vista como um sistema IoT simples:
 - Jumpers
 - Protoboard
 
-# Fotos Wokwi, Node-red e Dashboard
+# Fotos Wokwi, Node-red, Dashboard e Biblioteca:
 <img width="522" height="449" alt="image" src="https://github.com/user-attachments/assets/31a78156-be25-4947-bd12-938038216c32" />
+<img width="1599" height="722" alt="image" src="https://github.com/user-attachments/assets/6ee78bcc-1647-4abd-a62d-bcff88edc2c4" />
+<img width="800" height="407" alt="image" src="https://github.com/user-attachments/assets/a1b80220-df71-481d-8906-7838128dfcc1" />
+<img width="864" height="712" alt="image" src="https://github.com/user-attachments/assets/cbdd6865-9827-4a97-8d2e-08e5d52ba4d4" />
+<img width="214" height="728" alt="image" src="https://github.com/user-attachments/assets/49c102bd-30b5-47f4-a808-00484a026c5c" />
+<img width="702" height="564" alt="image" src="https://github.com/user-attachments/assets/90e1fc4b-6c41-4940-9094-085efd8faf3d" />
+
+
+
+
+
 
 
