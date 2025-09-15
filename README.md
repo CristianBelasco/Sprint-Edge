@@ -6,6 +6,9 @@
 - Samuel de Oliveira da Silva - RM566245.
 - Rafael Felix - RM565855.
 
+# Link Video
+https://youtu.be/dumJnbvipEo
+
 # Link projeto:
 https://wokwi.com/projects/441663235442064385
 
