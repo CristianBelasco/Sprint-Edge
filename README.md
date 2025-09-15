@@ -16,6 +16,8 @@ https://wokwi.com/projects/441663235442064385
 
 - Este projeto utiliza um ESP32 conectado a sensores e LEDs para monitorar uma mini-partida de futebol (ou treino) e enviar informações em tempo real via MQTT para um servidor. Ele mede número de passes, jogador ativo, distância de objetos (bola ou jogador) e condições climáticas (temperatura e umidade). O sistema aciona LEDs de sinalização de acordo com o número de passes (verde, amarelo ou vermelho) e publica todos os dados em tópicos separados no broker MQTT.
 
+# - sempre que o ultrassonico for levado para 2cm sera marcado mais um passe
+
 Resumo:
 - Sensores → Captam distância, temperatura e umidade.
 - ESP32 → Processa os dados, conta passes, alterna jogador e decide o LED correto.
